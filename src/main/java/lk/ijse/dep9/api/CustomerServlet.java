@@ -44,7 +44,53 @@ public class CustomerServlet extends HttpServlet2 {
     }
 
     private void searchPaginatedCustomers(String query, int size, int page, HttpServletResponse response) throws IOException {
-        response.getWriter().printf("Search paginate customers" + query + size + page);
+        try (Connection connection = pool.getConnection()) {
+            String sql="SELECT COUNT(id) AS count FROM customer WHERE id LIKE ? OR name LIKE ? OR address LIKE ? ";
+            PreparedStatement countStm = connection.prepareStatement(sql);
+            PreparedStatement stm = connection.prepareStatement("SELECT * FROM customer WHERE id LIKE ? OR name LIKE ? OR address LIKE ?  LIMIT ? OFFSET ?");
+
+            query="%"+query+"%";
+
+
+
+            stm.setString(1,query);
+            stm.setString(2,query);
+            stm.setString(3,query);
+
+            stm.setInt(4,size);
+            stm.setInt(5,(page-1)*size);
+
+
+
+
+
+            ResultSet countRST = countStm.executeQuery();
+            countRST.next();
+            int totalCustomers = countRST.getInt("count");
+            response.setIntHeader("X-Total-Count", totalCustomers);
+
+
+
+
+            ResultSet rst = stm.executeQuery();
+
+            ArrayList<CustomerDTO> customers = new ArrayList<>();
+            while(rst.next()){
+                String id = rst.getString("id");
+                String name = rst.getString("name");
+                String address = rst.getString("address");
+                customers.add(new CustomerDTO(id, name, address));
+            }
+
+            Jsonb jsonb = JsonbBuilder.create();
+            response.setContentType("application/json");
+            jsonb.toJson(customers, response.getWriter());
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Failed fetch customers");
+        }
+
     }
 
     @Override
