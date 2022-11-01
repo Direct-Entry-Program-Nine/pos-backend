@@ -34,6 +34,7 @@ public class ItemServlet extends HttpServlet2 {
             loadAllItems(response);
         } else if (query != null || size != null || page != null) {
             //search paginate items
+            //search paginate items
         } else {
             Matcher matcher = Pattern.compile("^/[a-fA-F-0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}/?$").matcher(request.getPathInfo());
             if (matcher.matches()){
