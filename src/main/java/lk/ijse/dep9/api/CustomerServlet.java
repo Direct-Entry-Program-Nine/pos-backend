@@ -54,7 +54,11 @@ public class CustomerServlet extends HttpServlet2 {
 
     @Override
     protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        resp.getWriter().printf("Delete member");
+        try (Connection connection = pool.getConnection()){
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
