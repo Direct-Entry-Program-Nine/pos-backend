@@ -16,10 +16,11 @@ import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-@WebServlet(name = "CustomerServlet", value = "/customers/*")
+@WebServlet(name = "CustomerServlet", value = "/customers/*",loadOnStartup = 0)
 public class CustomerServlet extends HttpServlet2 {
-    @Resource(lookup = "java:/comp/env/jdbc/dep9-pos")
+    @Resource(lookup ="java:/comp/env/jdbc/dep9-pos")
     private DataSource pool;
+
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
         String query = request.getParameter("q");
