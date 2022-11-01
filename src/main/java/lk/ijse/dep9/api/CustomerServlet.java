@@ -53,10 +53,31 @@ public class CustomerServlet extends HttpServlet2 {
     }
 
     @Override
-    protected void doDelete(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        try (Connection connection = pool.getConnection()){
+    protected void doDelete(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        if (request.getPathInfo() == null || request.getPathInfo().equals("/")){
+            response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED);
+            return;
+        }
+        Matcher matcher = Pattern.compile("^/([A-Fa-f0-9]{8}(-[A-Fa-f0-9]{4}){3}-[A-Fa-f0-9]{12})$").matcher(request.getPathInfo());
+        if (matcher.matches()){
+            deleteCustomer(matcher.group(1), response);
+        }else {
+            response.sendError(HttpServletResponse.SC_NOT_IMPLEMENTED, "Expected valid UUID");
+        }
+    }
 
-        } catch (SQLException e) {
+    private void deleteCustomer(String customerId, HttpServletResponse response) {
+        try {
+            Connection connection = pool.getConnection();
+            PreparedStatement stm = connection.prepareStatement("DELETE FROM customer WHERE id=?");
+            stm.setString(1, customerId);
+            int affectedRows = stm.executeUpdate();
+            if (affectedRows == 0){
+                response.sendError(HttpServletResponse.SC_NOT_FOUND, "Invalid customer ID");
+            }else {
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            }
+        } catch (SQLException | IOException e) {
             throw new RuntimeException(e);
         }
     }
