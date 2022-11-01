@@ -11,7 +11,6 @@ import java.io.IOException;
 public class ItemServlet extends HttpServlet2 {
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-
     }
 
     @Override
