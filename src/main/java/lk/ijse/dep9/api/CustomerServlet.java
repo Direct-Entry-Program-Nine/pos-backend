@@ -47,7 +47,6 @@ public class CustomerServlet extends HttpServlet2 {
     }
 
     private void searchPaginatedCustomers(String query, int size, int page, HttpServletResponse response) throws IOException {
-
         try (Connection connection = pool.getConnection()) {
             String sql="SELECT COUNT(id) AS count FROM customer WHERE id LIKE ? OR name LIKE ? OR address LIKE ? ";
             PreparedStatement countStm = connection.prepareStatement(sql);
@@ -55,6 +54,9 @@ public class CustomerServlet extends HttpServlet2 {
 
             query="%"+query+"%";
 
+            countStm.setString(1,query);
+            countStm.setString(2,query);
+            countStm.setString(3,query);
 
             stm.setString(1,query);
             stm.setString(2,query);
@@ -86,6 +88,8 @@ public class CustomerServlet extends HttpServlet2 {
             e.printStackTrace();
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR,"Failed fetch customers");
         }
+
+
 
     }
 
