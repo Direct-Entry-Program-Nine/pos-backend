@@ -23,15 +23,18 @@ public class CustomerServlet extends HttpServlet2 {
 
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String query = request.getParameter("q");
-        String size = request.getParameter("size");
-        String page = request.getParameter("page");
+        if (request.getPathInfo() == null || request.getPathInfo().equals("/")){
+            String query = request.getParameter("q");
+            String size = request.getParameter("size");
+            String page = request.getParameter("page");
 
-        if (request.getPathInfo() == null || request.getPathInfo() == "/"){
-            fetchAllCustomers(response);
-        } else if (query != null || size != null || page != null) {
-            searchPaginatedCustomers(query ,Integer.parseInt(size), Integer.parseInt(page), response);
-        } else {
+            if (query != null && size != null && page != null) {
+                searchPaginatedCustomers(query ,Integer.parseInt(size), Integer.parseInt(page), response);
+            }else{
+                fetchAllCustomers(response);
+            }
+
+        }else{
             Matcher matcher = Pattern.compile("^/[a-fA-F-0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}/?$").matcher(request.getPathInfo());
             if (matcher.matches()){
                 getCustomerDetails(matcher.group(1), response);
@@ -44,6 +47,7 @@ public class CustomerServlet extends HttpServlet2 {
     }
 
     private void searchPaginatedCustomers(String query, int size, int page, HttpServletResponse response) throws IOException {
+
         try (Connection connection = pool.getConnection()) {
             String sql="SELECT COUNT(id) AS count FROM customer WHERE id LIKE ? OR name LIKE ? OR address LIKE ? ";
             PreparedStatement countStm = connection.prepareStatement(sql);
@@ -52,25 +56,17 @@ public class CustomerServlet extends HttpServlet2 {
             query="%"+query+"%";
 
 
-
             stm.setString(1,query);
             stm.setString(2,query);
             stm.setString(3,query);
-
             stm.setInt(4,size);
             stm.setInt(5,(page-1)*size);
-
-
-
 
 
             ResultSet countRST = countStm.executeQuery();
             countRST.next();
             int totalCustomers = countRST.getInt("count");
             response.setIntHeader("X-Total-Count", totalCustomers);
-
-
-
 
             ResultSet rst = stm.executeQuery();
 

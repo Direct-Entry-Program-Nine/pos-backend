@@ -26,21 +26,27 @@ public class ItemServlet extends HttpServlet2 {
     private DataSource pool;
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        String query = request.getParameter("q");
-        String size = request.getParameter("size");
-        String page = request.getParameter("page");
+        if (request.getPathInfo() == null || request.getPathInfo().equals("/")){
+            String query = request.getParameter("q");
+            String size = request.getParameter("size");
+            String page = request.getParameter("page");
 
-        if (request.getPathInfo() == null || request.getPathInfo() == "/"){
-            loadAllItems(response);
-        } else if (query != null || size != null || page != null) {
-            //search paginate items
-            //search paginate items
-        } else {
+            if (query != null && size != null && page != null) {
+                //searchPaginateItems(query ,Integer.parseInt(size), Integer.parseInt(page), response);
+            }else{
+                loadAllItems(response);
+            }
+
+        }else{
             Matcher matcher = Pattern.compile("^/[a-fA-F-0-9]{8}(-[a-fA-F0-9]{4}){3}-[a-fA-F0-9]{12}/?$").matcher(request.getPathInfo());
             if (matcher.matches()){
-               //get item details
+//                getItemDetails(matcher.group(1), response);
             }
         }
+    }
+
+    private void loadPaginatedItems(String query, String page, String size, HttpServletResponse response) {
+
     }
 
     private void loadAllItems(HttpServletResponse response) {
@@ -50,12 +56,13 @@ public class ItemServlet extends HttpServlet2 {
             ResultSet rst = stm.executeQuery("SELECT * FROM item");
 
             ArrayList<ItemDTO> items = new ArrayList<>();
-            while(rst.next()){
+
+            while (rst.next()) {
                 String code = rst.getString("code");
                 String description = rst.getString("description");
                 double unitPrice = rst.getDouble("unit_price");
-                int stock= rst.getInt("stock");
-                ItemDTO dto = new ItemDTO(code, description, unitPrice,stock);
+                int stock = rst.getInt("stock");
+                ItemDTO dto = new ItemDTO(code, description, unitPrice, stock);
                 items.add(dto);
             }
 
